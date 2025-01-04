@@ -4,7 +4,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowRight, ChevronDown, ChevronRight, Plus, Pencil, MoreVertical } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { TaskItem, TaskType } from '../types'
 import { TaskTypeIcon } from '../atoms/TaskTypeIcon'
@@ -13,7 +12,7 @@ interface TaskProps {
   task: TaskItem
   index: number
   onToggleDone: (id: string) => void
-  onMigrate: (id: string, destination: 'day' | 'month' | 'future' | 'nextWeek') => void
+  onMigrate: (id: string, destination: 'nextDay' | 'month' | 'future' | 'nextWeek') => void
   onArchive: (id: string) => void
   onTypeChange: (id: string, type: TaskType) => void
   onAddSubTask: (parentId: string, subTask: TaskItem) => void
@@ -73,8 +72,8 @@ export function Task({
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
-            <Checkbox 
-              id={task.id} 
+            <Checkbox
+              id={task.id}
               checked={task.isDone}
               onCheckedChange={() => onToggleDone(task.id)}
             />
@@ -132,9 +131,9 @@ export function Task({
                 </DropdownMenuItem>
                 {!task.isSubTask && (
                   <>
-                    <DropdownMenuItem onSelect={() => onMigrate(task.id, 'day')}>
+                    <DropdownMenuItem onSelect={() => onMigrate(task.id, 'nextDay')}>
                       <ArrowRight className="mr-2 h-4 w-4" />
-                      Migrate to Day
+                      Migrate to Next Day
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => onMigrate(task.id, 'month')}>
                       <ArrowRight className="mr-2 h-4 w-4" />
@@ -192,7 +191,7 @@ export function Task({
                   value={newSubTask}
                   onChange={(e) => setNewSubTask(e.target.value)}
                   placeholder="Add a sub-task"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddSubTask()}
+                  onKeyUp={(e) => e.key === 'Enter' && handleAddSubTask()}
                 />
                 <Button size="sm" onClick={handleAddSubTask}>
                   <Plus className="h-4 w-4" />
@@ -206,4 +205,3 @@ export function Task({
     </Draggable>
   )
 }
-

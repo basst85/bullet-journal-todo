@@ -6,8 +6,9 @@ interface TaskListProps {
   tasks: TaskItem[]
   droppableId: string
   onToggleDone: (id: string) => void
-  onMigrate: (id: string, destination: 'day' | 'month' | 'future' | 'nextWeek') => void
+  onMigrate: (id: string, destination: 'nextDay' | 'month' | 'future' | 'nextWeek') => void
   onArchive: (id: string) => void
+  onDelete: (id: string) => void
   onTypeChange: (id: string, type: TaskItem['type']) => void
   onAddSubTask: (parentId: string, subTask: TaskItem) => void
   onUpdateSubTasks: (parentId: string, subTasks: TaskItem[]) => void
@@ -49,4 +50,3 @@ export function TaskList({
     </Droppable>
   )
 }
-

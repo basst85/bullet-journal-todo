@@ -6,13 +6,11 @@ import { TaskInput } from './molecules/TaskInput'
 import { TaskList } from './organisms/TaskList'
 import { TaskItem, TaskType } from './types'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DatePicker } from "./molecules/DatePicker"
 
 export default function FutureLog() {
   const [tasks, setTasks] = useState<TaskItem[]>([])
   const [filteredTasks, setFilteredTasks] = useState<TaskItem[]>([])
   const [typeFilter, setTypeFilter] = useState<TaskType | 'all'>('all')
-  const [deadlineFilter, setDeadlineFilter] = useState<Date | null>(null)
 
   useEffect(() => {
     const storedTasks = localStorage.getItem('futureTasks')
@@ -30,25 +28,18 @@ export default function FutureLog() {
     if (typeFilter !== 'all') {
       filtered = filtered.filter(task => task.type === typeFilter)
     }
-    if (deadlineFilter) {
-      filtered = filtered.filter(task => {
-        if (!task.deadline) return false
-        const taskDate = new Date(task.deadline)
-        return taskDate.toDateString() === deadlineFilter.toDateString()
-      })
-    }
     setFilteredTasks(filtered)
-  }, [tasks, typeFilter, deadlineFilter])
+  }, [tasks, typeFilter])
 
-  const addTask = (content: string, type: TaskType, deadline?: Date) => {
-    setTasks([...tasks, { id: crypto.randomUUID(), content, isDone: false, type, subTasks: [], isSubTask: false, deadline }])
+  const addTask = (content: string, type: TaskType) => {
+    setTasks([...tasks, { id: crypto.randomUUID(), content, isDone: false, type, subTasks: [], isSubTask: false, archived: false }])
   }
 
   const toggleDone = (id: string) => {
     setTasks(updateTasksRecursively(tasks, id, task => ({ ...task, isDone: !task.isDone })))
   }
 
-  const migrateTask = (id: string, destination: 'day' | 'month' | 'future') => {
+  const migrateTask = (id: string, destination: 'nextDay' | 'month' | 'future' | 'nextWeek') => {
     const { task: taskToMigrate, updatedTasks } = removeTaskRecursively(tasks, id)
     if (taskToMigrate && !taskToMigrate.isSubTask) {
       const storedTasks = localStorage.getItem(`${destination}Tasks`)
@@ -56,7 +47,7 @@ export default function FutureLog() {
       destinationTasks.push({ ...taskToMigrate, id: crypto.randomUUID() })
       localStorage.setItem(`${destination}Tasks`, JSON.stringify(destinationTasks))
       setTasks(updatedTasks)
-      
+
       const event = new CustomEvent('tasksUpdated', { detail: { logType: destination } })
       window.dispatchEvent(event)
     }
@@ -104,7 +95,9 @@ export default function FutureLog() {
         setTasks(updateTasksRecursively(tasks, parentId, task => {
           const newSubTasks = Array.from(task.subTasks)
           const [reorderedItem] = newSubTasks.splice(result.source.index, 1)
-          newSubTasks.splice(result.destination.index, 0, reorderedItem)
+          if (result.destination) {
+            newSubTasks.splice(result.destination.index, 0, reorderedItem)
+          }
           return { ...task, subTasks: newSubTasks }
         }))
       }
@@ -179,12 +172,6 @@ export default function FutureLog() {
             <SelectItem value="note">Note</SelectItem>
           </SelectContent>
         </Select>
-        <DatePicker
-          selected={deadlineFilter}
-          onChange={(date: Date | null) => setDeadlineFilter(date)}
-          placeholderText="Filter by deadline"
-          isClearable
-        />
       </div>
       <TaskInput onAddTask={addTask} />
       <DragDropContext onDragEnd={onDragEnd}>
@@ -194,6 +181,8 @@ export default function FutureLog() {
           onToggleDone={toggleDone}
           onMigrate={migrateTask}
           onDelete={deleteTask}
+          onArchive={() => {}}
+          onEditTask={() => {}}
           onTypeChange={changeTaskType}
           onAddSubTask={addSubTask}
           onUpdateSubTasks={updateSubTasks}
@@ -248,4 +237,3 @@ function findTaskById(tasks: TaskItem[], id: string): TaskItem | null {
   }
   return null
 }
-

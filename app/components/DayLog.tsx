@@ -6,7 +6,6 @@ import { TaskInput } from './molecules/TaskInput'
 import { TaskList } from './organisms/TaskList'
 import { TaskItem, TaskType } from './types'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Date; isExpanded: boolean; refreshTrigger: number }) {
   const [tasks, setTasks] = useState<TaskItem[]>([])
@@ -21,7 +20,9 @@ export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Dat
   }, [date, refreshTrigger])
 
   useEffect(() => {
-    localStorage.setItem(`dayTasks-${date.toISOString().split('T')[0]}`, JSON.stringify(tasks))
+    if(tasks.length > 0) {
+      localStorage.setItem(`dayTasks-${date.toISOString().split('T')[0]}`, JSON.stringify(tasks))
+    }
   }, [tasks, date])
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Dat
     setTasks(updateTasksRecursively(tasks, id, task => ({ ...task, isDone: !task.isDone })))
   }
 
-  const migrateTask = (id: string, destination: 'day' | 'month' | 'future' | 'nextWeek') => {
+  const migrateTask = (id: string, destination: 'nextDay' | 'month' | 'future' | 'nextWeek') => {
     const { task: taskToMigrate, updatedTasks } = removeTaskRecursively(tasks, id)
     if (taskToMigrate && !taskToMigrate.isSubTask) {
       if (destination === 'nextWeek') {
@@ -56,7 +57,7 @@ export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Dat
         localStorage.setItem(`${destination}Tasks`, JSON.stringify(destinationTasks))
       }
       setTasks(updatedTasks)
-      
+
       const event = new CustomEvent('tasksUpdated', { detail: { logType: destination } })
       window.dispatchEvent(event)
     }
@@ -110,7 +111,9 @@ export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Dat
         setTasks(updateTasksRecursively(tasks, parentId, task => {
           const newSubTasks = Array.from(task.subTasks)
           const [reorderedItem] = newSubTasks.splice(result.source.index, 1)
-          newSubTasks.splice(result.destination.index, 0, reorderedItem)
+          if (result.destination) {
+            newSubTasks.splice(result.destination.index, 0, reorderedItem)
+          }
           return { ...task, subTasks: newSubTasks }
         }))
       }
@@ -176,6 +179,7 @@ export default function DayLog({ date, isExpanded, refreshTrigger }: { date: Dat
           onToggleDone={toggleDone}
           onMigrate={migrateTask}
           onArchive={archiveTask}
+          onDelete={() => {}}
           onTypeChange={changeTaskType}
           onAddSubTask={addSubTask}
           onUpdateSubTasks={updateSubTasks}
@@ -231,4 +235,3 @@ function findTaskById(tasks: TaskItem[], id: string): TaskItem | null {
   }
   return null
 }
-

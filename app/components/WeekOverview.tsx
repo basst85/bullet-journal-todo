@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns'
 import DayLog from './DayLog'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { ChevronDown, ChevronUp } from 'lucide-react'
 
 export default function WeekOverview() {
   const [currentWeek, setCurrentWeek] = useState(() => {
@@ -85,8 +84,8 @@ export default function WeekOverview() {
         </div>
         <Button onClick={goToNextWeek}>Next Week</Button>
       </div>
-      <Accordion 
-        type="multiple" 
+      <Accordion
+        type="multiple"
         className="space-y-2"
         value={Object.entries(expandedDays)
           .filter(([_, isExpanded]) => isExpanded)
@@ -118,4 +117,3 @@ export default function WeekOverview() {
     </div>
   )
 }
-

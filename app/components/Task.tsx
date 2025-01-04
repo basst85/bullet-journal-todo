@@ -69,8 +69,8 @@ export default function Task({ task, index, onToggleDone, onMigrate, onDelete, o
             <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
-            <Checkbox 
-              id={task.id} 
+            <Checkbox
+              id={task.id}
               checked={task.isDone}
               onCheckedChange={() => onToggleDone(task.id)}
             />
@@ -161,4 +161,3 @@ export default function Task({ task, index, onToggleDone, onMigrate, onDelete, o
     </Draggable>
   )
 }
-
